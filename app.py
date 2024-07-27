@@ -1,12 +1,10 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 from pycaret.time_series import *
 from PIL import Image
 import requests
 from streamlit_lottie import st_lottie
-import time
 
 # Function to load Lottie animation
 def load_lottieurl(url: str):
@@ -58,6 +56,7 @@ data_file = st.file_uploader("Upload a CSV file", type=['csv'])
 # Button for submission
 if st.button("Submit"):
     if data_file:
+        st.write("Processing Your Request")
         data = pd.read_csv(data_file)
         data['Date'] = pd.to_datetime(data['Date'])
         data.set_index('Date', inplace=True)
@@ -66,7 +65,7 @@ if st.button("Submit"):
         test_data = data.iloc[train_size:]
         
         # Show processing animation
-        with st.spinner('Processing...'):
+        with st.spinner('Processing Your Request...'):
             show_processing_animation()
             
             # Train models
@@ -84,25 +83,5 @@ if st.button("Submit"):
             # Display metrics
             st.write("Model Metrics:")
             st.dataframe(metrics_df)
-            
-            # Plot and display forecast
-            plt.figure(figsize=(12, 6))
-            plt.plot(test_data.index, test_data.values, label='Actual', color='blue')
-            forecast_index = pd.date_range(start=test_data.index[-1] + pd.DateOffset(days=1), periods=len(future_forecast), freq=test_data.index.freq)
-            future_forecast.index = forecast_index
-            plt.plot(future_forecast.index, future_forecast[future_forecast.columns[0]], label='Forecast', color='red')
-            plt.title('Actual vs Forecasted Values')
-            plt.xlabel('Date')
-            plt.ylabel('Value')
-            plt.legend()
-            plt.savefig('/content/forecast_vs_actual.png')
-            st.image('/content/forecast_vs_actual.png')
-            
-            # Display forecast table
-            forecast_file = '/content/future_forecast.xlsx'
-            future_forecast.to_excel(forecast_file, index=True)
-            st.write("Forecast values have been saved.")
-            st.download_button("Download Forecast Data", data=open(forecast_file, 'rb'), file_name='future_forecast.xlsx')
     else:
         st.write("Please upload a CSV file to proceed.")
-
