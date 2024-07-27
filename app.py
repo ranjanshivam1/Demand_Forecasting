@@ -24,7 +24,7 @@ data_file = st.file_uploader("Upload a CSV file", type=['csv'])
 def show_processing_animation():
     st.markdown("""
     <div style="text-align: center;">
-        <img src="https://assets4.lottiefiles.com/packages/lf20_4sqkv2wq.json" width="300" height="300">
+        <img src="https://assets7.lottiefiles.com/packages/lf20_4sqkv2wq.json" width="300" height="300">
     </div>
     """, unsafe_allow_html=True)
 
