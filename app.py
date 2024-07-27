@@ -20,7 +20,7 @@ def calculate_metrics(model_results, test_data):
     metrics = {}
     for model_name, model in model_results.items():
         y_true = test_data.values
-        y_pred = model.predict()  # Make sure to adjust this based on how your model provides predictions
+        y_pred = model.predict()  # Adjust based on your model
         mae = np.mean(np.abs(y_true - y_pred))
         rmse = np.sqrt(np.mean((y_true - y_pred) ** 2))
         mape = np.mean(np.abs((y_true - y_pred) / y_true))
@@ -54,53 +54,55 @@ fh = st.number_input("Enter the number of periods to forecast", min_value=1, max
 
 # Upload file
 data_file = st.file_uploader("Upload a CSV file", type=['csv'])
-if data_file:
-    data_file = pd.read_csv(data_file)
-    data_file['Date'] = pd.to_datetime(data_file['Date'])
-    data_file.set_index('Date', inplace=True)
-    train_size = int(len(data_file) * 0.8)
-    train_data = data_file.iloc[:train_size]
-    test_data = data_file.iloc[train_size:]
 
-    # Show processing animation
-    with st.spinner('Processing...'):
-        show_processing_animation()
-        # Train models
-        start_time = time.time()
-        s = setup(train_data, fh=fh, fold=3)
-        models_to_compare = ['ets', 'arima', 'prophet', 'naive', 'exp_smooth', 'polytrend', 'croston', 'gbr_cds_dt']
-        best_model = compare_models(include=models_to_compare)
-        final_best = finalize_model(best_model)
-        future_forecast = predict_model(final_best, fh=fh)
-        
-        # Calculate metrics
-        model_results = {}  # Replace with actual model results if needed
-        metrics_df = calculate_metrics(model_results, test_data)
-        
-        # Display metrics
-        st.write("Model Metrics:")
-        st.dataframe(metrics_df)
-        
-        # Plot and display forecast
-        plt.figure(figsize=(12, 6))
-        plt.plot(test_data.index, test_data.values, label='Actual', color='blue')
-        forecast_index = pd.date_range(start=test_data.index[-1] + pd.DateOffset(days=1), periods=len(future_forecast), freq=test_data.index.freq)
-        future_forecast.index = forecast_index
-        plt.plot(future_forecast.index, future_forecast[future_forecast.columns[0]], label='Forecast', color='red')
-        plt.title('Actual vs Forecasted Values')
-        plt.xlabel('Date')
-        plt.ylabel('Value')
-        plt.legend()
-        plt.savefig('/content/forecast_vs_actual.png')
-        st.image('/content/forecast_vs_actual.png')
-        
-        # Display forecast table
-        forecast_file = '/content/future_forecast.xlsx'
-        future_forecast.to_excel(forecast_file, index=True)
-        st.write("Forecast values have been saved.")
-        st.download_button("Download Forecast Data", data=open(forecast_file, 'rb'), file_name='future_forecast.xlsx')
-
-# Add button for submission after entering periods
+# Button for submission
 if st.button("Submit"):
-    st.write("Processing your request...")
-    # Re-trigger processing logic here if needed
+    if data_file:
+        data = pd.read_csv(data_file)
+        data['Date'] = pd.to_datetime(data['Date'])
+        data.set_index('Date', inplace=True)
+        train_size = int(len(data) * 0.8)
+        train_data = data.iloc[:train_size]
+        test_data = data.iloc[train_size:]
+        
+        # Show processing animation
+        with st.spinner('Processing...'):
+            show_processing_animation()
+            
+            # Train models
+            start_time = time.time()
+            s = setup(train_data, fh=fh, fold=3)
+            models_to_compare = ['ets', 'arima', 'prophet', 'naive', 'exp_smooth', 'polytrend', 'croston', 'gbr_cds_dt']
+            best_model = compare_models(include=models_to_compare)
+            final_best = finalize_model(best_model)
+            future_forecast = predict_model(final_best, fh=fh)
+            
+            # Calculate metrics
+            model_results = {}  # Replace with actual model results if needed
+            metrics_df = calculate_metrics(model_results, test_data)
+            
+            # Display metrics
+            st.write("Model Metrics:")
+            st.dataframe(metrics_df)
+            
+            # Plot and display forecast
+            plt.figure(figsize=(12, 6))
+            plt.plot(test_data.index, test_data.values, label='Actual', color='blue')
+            forecast_index = pd.date_range(start=test_data.index[-1] + pd.DateOffset(days=1), periods=len(future_forecast), freq=test_data.index.freq)
+            future_forecast.index = forecast_index
+            plt.plot(future_forecast.index, future_forecast[future_forecast.columns[0]], label='Forecast', color='red')
+            plt.title('Actual vs Forecasted Values')
+            plt.xlabel('Date')
+            plt.ylabel('Value')
+            plt.legend()
+            plt.savefig('/content/forecast_vs_actual.png')
+            st.image('/content/forecast_vs_actual.png')
+            
+            # Display forecast table
+            forecast_file = '/content/future_forecast.xlsx'
+            future_forecast.to_excel(forecast_file, index=True)
+            st.write("Forecast values have been saved.")
+            st.download_button("Download Forecast Data", data=open(forecast_file, 'rb'), file_name='future_forecast.xlsx')
+    else:
+        st.write("Please upload a CSV file to proceed.")
+
