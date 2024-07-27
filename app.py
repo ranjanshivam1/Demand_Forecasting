@@ -20,14 +20,6 @@ fh = st.number_input("Enter the number of periods to forecast", min_value=1, max
 # Upload file
 data_file = st.file_uploader("Upload a CSV file", type=['csv'])
 
-# Add Lottie animation for processing
-def show_processing_animation():
-    st.markdown("""
-    <div style="text-align: center;">
-        <img src="https://assets7.lottiefiles.com/packages/lf20_4sqkv2wq.json" width="300" height="300">
-    </div>
-    """, unsafe_allow_html=True)
-
 # Function to calculate and display metrics
 def calculate_metrics(y_true, y_pred, start_time):
     mae = np.mean(np.abs(y_true - y_pred))
@@ -42,9 +34,6 @@ def calculate_metrics(y_true, y_pred, start_time):
 if st.button("Submit"):
     if data_file:
         with st.spinner('Processing Your Request...'):
-            # Display processing animation
-            show_processing_animation()
-            
             data = pd.read_csv(data_file)
             data['Date'] = pd.to_datetime(data['Date'])
             data.set_index('Date', inplace=True)
